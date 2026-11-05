@@ -1,5 +1,25 @@
+# Credenciais
 .env
 .env.*
 !.env.example
 *.pem
 *.key
+
+# Ambiente virtual
+.venv/
+venv/
+
+# Cache Python
+__pycache__/
+*.py[cod]
+
+# Ferramentas
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Sistema e editor
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
