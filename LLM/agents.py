@@ -4,7 +4,7 @@ from pathlib import Path
 
 from agents import Agent, Runner, function_tool
 from pydantic import BaseModel, Field
-
+from LLM.guardrails import verificar_saida
 from Data.data_loader import (
     carregar_ficha,
     montar_contexto,
@@ -142,55 +142,119 @@ agente_principal = Agent(
     ],
 )
 
+
 # ==========================================
 # ORQUESTRAÇÃO DOS AGENTES
 # ==========================================
 
 async def executar_agentes(pergunta: str) -> str:
     """
-    Executa triagem, orientação e revisão.
+    Executa o fluxo completo do Citizen Assist AI:
 
-    Os guardrails de entrada são executados
-    antes da primeira chamada aos especialistas.
+    1. Validação de entrada
+    2. Triagem
+    3. Carregamento das fichas
+    4. Orientação
+    5. Revisão
+    6. Validação de saída
+    7. Resposta final
     """
 
-    # Primeira execução: aplica os guardrails de entrada.
-    entrada = await Runner.run(
-        agente_principal,
-        pergunta,
-    )
+    # ======================================
+    # 1. VALIDAÇÃO DA ENTRADA
+    # ======================================
 
-    # A triagem recebe somente a entrada já validada.
+    if not isinstance(pergunta, str) or not pergunta.strip():
+        return (
+            "Não entendi sua pergunta. "
+            "Por favor, reformule sua dúvida. "
+            "Este é um protótipo educacional, não um canal oficial."
+        )
+
+    pergunta = pergunta.strip()
+
+    # Verificação de segurança antes de chamar a API
+    from LLM.guardrails import verificar_entrada, verificar_saida
+
+    motivo_entrada = verificar_entrada(pergunta)
+
+    if motivo_entrada == "dados_pessoais":
+        return (
+            "Por segurança, não informe dados pessoais neste chat. "
+            "Não realizo consultas cadastrais nem agendamentos. "
+            "Utilize os canais oficiais do órgão competente. "
+            "Este é um protótipo educacional, não um canal oficial."
+        )
+
+    if motivo_entrada == "prompt_injection":
+        return (
+            "Não posso seguir instruções que alterem as regras "
+            "do assistente ou revelem instruções internas. "
+            "Posso ajudar com orientações sobre documentos. "
+            "Este é um protótipo educacional, não um canal oficial."
+        )
+
+    # ======================================
+    # 2. AGENTE DE TRIAGEM
+    # ======================================
+
     triagem_run = await Runner.run(
         agente_triagem,
-        pergunta,
+        pergunta
     )
+
     triagem = triagem_run.final_output
+
+    print("\n=== DEBUG TRIAGEM ===")
+    print("Assunto:", triagem.assunto)
+    print("Fichas:", triagem.fichas)
+    print("Dentro do escopo:", triagem.dentro_escopo)
+
+    if triagem.assunto.lower().strip() == "entrada_invalida":
+        return (
+            "Não entendi sua pergunta. Pode reformulá-la? "
+            "Por exemplo: Quanto custa a segunda via do RG? "
+            "Este é um protótipo educacional, não um canal oficial."
+        )
+
+    if triagem.assunto.lower().strip() == "aviso_de_limitacao":
+        return (
+            "Não, o Citizen Assist AI não é um canal oficial. "
+            "Este é um protótipo educacional. "
+            "Confirme as informações no órgão competente."
+        )
 
     if not triagem.dentro_escopo:
         return (
-            "Não encontrei essa informação nas fichas "
-            "do projeto. Consulte o órgão competente. "
-            "Este é um protótipo educacional, "
-            "não um canal oficial."
+            "Não encontrei essa informação nas fichas do projeto. "
+            "Consulte o órgão competente. "
+            "Este é um protótipo educacional, não um canal oficial."
         )
 
-    fichas_validas = [
+    # ======================================
+    # 3. SELEÇÃO DAS FICHAS
+    # ======================================
+
+    fichas_validas = list(dict.fromkeys(
         codigo
         for codigo in triagem.fichas
         if codigo in FICHAS
-    ]
+    ))
 
-    # O conteúdo autorizado é carregado localmente.
     referencias = []
 
     for codigo in fichas_validas:
+
         caminho = DOCUMENTS_DIR / FICHAS[codigo]
 
         if caminho.is_file():
+
+            conteudo = caminho.read_text(
+                encoding="utf-8"
+            )
+
             referencias.append(
-                f"[{codigo}]\n"
-                + caminho.read_text(encoding="utf-8")
+                f"[{codigo}]\n{conteudo}"
             )
 
     contexto = "\n\n".join(referencias)
@@ -198,44 +262,122 @@ async def executar_agentes(pergunta: str) -> str:
     if not contexto:
         return (
             "As fichas necessárias não estão disponíveis. "
-            "Não posso confirmar a informação."
+            "Não posso confirmar a informação solicitada. "
+            "Este é um protótipo educacional, não um canal oficial."
         )
 
-    # O especialista consulta as fichas.
+    # ======================================
+    # 4. AGENTE DE ORIENTAÇÃO
+    # ======================================
+
     orientacao_run = await Runner.run(
         agente_orientacao,
         (
-            f"Pergunta:\n{pergunta}\n\n"
-            f"Fichas selecionadas: {fichas_validas}\n"
-            "Consulte as fichas antes de responder."
-        ),
+            f"Pergunta do cidadão:\n{pergunta}\n\n"
+            f"Fichas autorizadas: {fichas_validas}\n\n"
+            "Consulte as fichas autorizadas antes de responder. "
+            "Não invente informações."
+        )
     )
 
-    resposta = str(orientacao_run.final_output)
+    resposta_orientacao = str(
+        orientacao_run.final_output
+    ).strip()
 
-    # O revisor confere a resposta contra as fontes.
+    print("\n=== DEBUG ORIENTAÇÃO ===")
+    print("Resposta:", resposta_orientacao)
+
+    if not resposta_orientacao:
+        return (
+            "Não foi possível gerar uma orientação. "
+            "Consulte o órgão competente. "
+            "Este é um protótipo educacional, não um canal oficial."
+        )
+
+    # ======================================
+    # 5. AGENTE DE REVISÃO
+    # ======================================
+
     revisao_run = await Runner.run(
         agente_revisao,
         (
-            f"Pergunta:\n{pergunta}\n\n"
-            f"Resposta:\n{resposta}\n\n"
-            f"Fichas autorizadas:\n{contexto}"
-        ),
+            f"Pergunta original:\n{pergunta}\n\n"
+            f"Resposta do agente de orientação:\n"
+            f"{resposta_orientacao}\n\n"
+            f"Fichas autorizadas:\n{contexto}\n\n"
+            "Verifique se a resposta está fundamentada "
+            "nas fichas e corrija eventuais inconsistências. "
+            "Retorne a resposta final no campo resposta_corrigida."
+        )
     )
 
     revisao = revisao_run.final_output
 
-    resposta_final = revisao.resposta_corrigida
+    print("\n=== DEBUG REVISÃO ===")
+    print("Aprovado:", revisao.aprovado)
+    print("Justificativa:", revisao.justificativa)
+    print("Resposta corrigida:", revisao.resposta_corrigida)
 
-    # A resposta final passa pelo guardrail de saída
-    # do agente principal antes de ser devolvida.
-    saida = await Runner.run(
-        agente_principal,
-        (
-            "Reproduza a resposta aprovada abaixo, "
-            "sem acrescentar informações:\n\n"
-            f"{resposta_final}"
-        ),
+    # ======================================
+    # 6. VALIDAÇÃO DA RESPOSTA
+    # ======================================
+
+    resposta_final = (
+        revisao.resposta_corrigida or ""
+    ).strip()
+
+    if not resposta_final:
+        return (
+            "Não foi possível validar a resposta. "
+            "Consulte o órgão competente. "
+            "Este é um protótipo educacional, não um canal oficial."
+        )
+
+    # A revisão pode reprovar a resposta original
+    # e fornecer uma versão corrigida.
+    # Por isso, não bloqueamos apenas por
+    # revisao.aprovado ser False.
+
+    motivo_saida = verificar_saida(
+        resposta_final
     )
 
-    return str(saida.final_output)
+    if motivo_saida:
+        print(
+            "Resposta bloqueada pelo guardrail:",
+            motivo_saida
+        )
+
+        return (
+            "Não foi possível fornecer uma resposta segura. "
+            "Consulte o órgão competente. "
+            "Este é um protótipo educacional, não um canal oficial."
+        )
+
+    # ======================================
+    # 7. RESPOSTA FINAL
+    # ======================================
+
+    # Não executa novamente o agente principal.
+    # Retorna diretamente a resposta revisada.
+
+    return resposta_final
+
+def identificar_fichas_por_palavras(pergunta: str) -> list[str]:
+    texto = pergunta.lower()
+
+    palavras = {
+        "FC-01": ["rg", "identidade"],
+        "FC-02": ["cpf"],
+        "FC-03": ["título de eleitor", "votar"],
+        "FC-04": ["carteira de trabalho", "ctps"],
+        "FC-05": ["certidão", "certidoes", "certidões"],
+        "FC-06": ["cnh", "habilitação"],
+        "FC-07": ["libras", "horário de atendimento"],
+    }
+
+    return [
+        codigo
+        for codigo, termos in palavras.items()
+        if any(termo in texto for termo in termos)
+    ]

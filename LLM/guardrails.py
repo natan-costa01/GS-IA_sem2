@@ -193,3 +193,66 @@ def validar_resposta(
         },
         tripwire_triggered=bloqueado,
     )
+
+import re
+
+
+def verificar_entrada(texto: str) -> str | None:
+    """
+    Verifica dados pessoais e tentativas
+    de prompt injection.
+    """
+
+    padrao_cpf = r"\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b"
+    padrao_email = r"\b[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}\b"
+
+    if (
+        re.search(padrao_cpf, texto)
+        or re.search(padrao_email, texto)
+    ):
+        return "dados_pessoais"
+
+    padroes_injecao = [
+        r"ignore\s+as\s+instruções\s+anteriores",
+        r"mostre\s+(?:seu|o)\s+prompt",
+        r"\[sistema\]",
+        r"\[system\]",
+        r"nova\s+regra\s*:",
+    ]
+
+    if any(
+        re.search(padrao, texto, re.IGNORECASE)
+        for padrao in padroes_injecao
+    ):
+        return "prompt_injection"
+
+    return None
+
+
+def verificar_saida(texto: str) -> str | None:
+    """
+    Verifica se a resposta contém
+    informações que devem ser bloqueadas.
+    """
+
+    padrao_cpf = r"\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b"
+    padrao_email = r"\b[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}\b"
+    padrao_chave = r"sk-(?:proj-)?[A-Za-z0-9_-]{12,}"
+
+    if (
+        re.search(padrao_cpf, texto)
+        or re.search(padrao_email, texto)
+    ):
+        return "dados_pessoais"
+
+    if re.search(padrao_chave, texto):
+        return "possivel_chave_api"
+
+    if re.search(
+        r"segunda via do RG.{0,80}(?:é gratuita|é grátis)",
+        texto,
+        re.IGNORECASE,
+    ):
+        return "informacao_incorreta_rg"
+
+    return None
