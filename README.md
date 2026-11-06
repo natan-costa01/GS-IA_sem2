@@ -345,8 +345,6 @@ Adicione:
 OPENAI_API_KEY=SUA_CHAVE_AQUI
 ```
 
-Nunca publique a chave de API no GitHub.
-
 ### 11.6. Executar o chatbot
 
 ```powershell
@@ -433,8 +431,6 @@ GS-IA_sem2/
 |-- requirements.txt
 |-- relatorio_global_solution_citizen_assist_ai.pdf
 ```
-
-O arquivo `requirements.txt` deve ser adicionado à raiz do projeto conforme apresentado neste README.
 
 ---
 
