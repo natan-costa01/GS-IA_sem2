@@ -1,19 +1,20 @@
+<div align="center">
 
-# Citizen Assist AI
+# CITIZEN ASSIST AI
 
-### Assistente Inteligente de Orientação ao Cidadão
+### Global Solution — Citizen Tech | FIAP
 
-Projeto acadêmico desenvolvido na **FIAP**, com foco na aplicação de Inteligência Artificial Generativa, sistemas multiagentes, validação de respostas e avaliação automatizada.
+**Assistente Inteligente de Orientação ao Cidadão**
 
-O **Citizen Assist AI** é um assistente virtual que orienta cidadãos sobre procedimentos relacionados a documentos e serviços públicos, utilizando uma base de conhecimento fictícia e controlada.
+Python • OpenAI Agents SDK • GPT-4o-mini • Gradio
 
-O sistema foi desenvolvido em Python, com interface Gradio, agentes especializados e integração com modelos de linguagem da OpenAI.
+</div>
 
 ---
 
-## 12. Equipe de desenvolvimento
+## 16. Equipe de desenvolvimento
 
-Projeto desenvolvido por estudantes da **FIAP — Faculdade de Informática e Administração Paulista**.
+Projeto desenvolvido por estudantes da FIAP.
 
 | Integrante | RM |
 |---|---|
@@ -23,190 +24,230 @@ Projeto desenvolvido por estudantes da **FIAP — Faculdade de Informática e Ad
 
 ---
 
-## 1. Objetivo do projeto
+## 1. Sobre o projeto
 
-Desenvolver um assistente inteligente capaz de interpretar perguntas em linguagem natural e fornecer orientações claras, seguras e fundamentadas em documentos previamente disponibilizados.
+O **Citizen Assist AI** é um projeto acadêmico desenvolvido para a **Global Solution — Citizen Tech da FIAP**.
+
+A proposta consiste em utilizar Inteligência Artificial Generativa para facilitar o acesso a informações sobre documentos e serviços públicos, por meio de um assistente virtual capaz de interpretar perguntas em linguagem natural.
+
+O sistema utiliza uma arquitetura multiagentes e uma base de conhecimento controlada, composta por sete fichas documentais fictícias da Central do Cidadão de Aurora.
+
+**Importante:** o Citizen Assist AI é um protótipo educacional. Não representa um órgão público, não realiza consultas cadastrais, não emite documentos e não efetua agendamentos.
+
+### Desafio oficial
+
+https://experience.fiap.com.br/global-solution-citizen-tech
+
+---
+
+## 2. Objetivos
+
+### Objetivo geral
+
+Desenvolver um assistente inteligente que ofereça orientações claras, seguras e fundamentadas em documentos previamente disponibilizados.
 
 ### Objetivos específicos
 
 - Implementar uma arquitetura multiagentes.
-- Utilizar documentos como fonte de conhecimento.
-- Identificar o assunto da solicitação do usuário.
-- Consultar fichas informativas relacionadas à pergunta.
-- Aplicar mecanismos de segurança (Guardrails).
-- Validar as respostas antes de apresentá-las.
-- Disponibilizar uma interface gráfica intuitiva.
-- Avaliar o desempenho utilizando um Golden Dataset.
-- Aplicar LLM-as-a-Judge para avaliação automatizada.
+- Interpretar solicitações em linguagem natural.
+- Identificar documentos relacionados à pergunta.
+- Consultar fichas informativas autorizadas.
+- Utilizar mecanismos de segurança e validação.
+- Revisar respostas antes de apresentá-las.
+- Disponibilizar uma interface gráfica com Gradio.
+- Avaliar respostas por meio de um Golden Dataset.
+- Aplicar LLM-as-a-Judge.
+- Realizar testes de usabilidade com participantes externos.
 
 ---
 
-## 2. Tecnologias utilizadas
+## 3. Tecnologias utilizadas
 
 | Tecnologia | Aplicação |
 |---|---|
 | Python | Linguagem principal |
-| OpenAI API | Processamento de linguagem natural |
+| OpenAI API | Integração com modelos de linguagem |
 | GPT-4o-mini | Modelo utilizado pelos agentes |
-| OpenAI Agents SDK | Orquestração dos agentes |
-| Pydantic | Estruturação e validação dos dados |
+| OpenAI Agents SDK | Implementação dos agentes |
+| Pydantic | Estruturação e validação de dados |
 | Gradio | Interface gráfica |
-| Markdown | Base documental |
-| Golden Dataset | Casos de teste |
-| LLM-as-a-Judge | Avaliação das respostas |
+| Markdown | Armazenamento das fichas documentais |
+| Python-dotenv | Carregamento de variáveis de ambiente |
+| Golden Dataset | Conjunto de casos de teste |
+| LLM-as-a-Judge | Avaliação automatizada |
 
 ---
 
-## 3. Arquitetura multiagentes
+## 4. Arquitetura multiagentes
 
-O sistema utiliza agentes especializados para organizar o processamento das solicitações.
+O sistema utiliza três agentes especializados no fluxo de atendimento.
 
 ### Agente de triagem
 
-Responsável por interpretar a pergunta, identificar o assunto e selecionar as fichas documentais relevantes.
+Interpreta a pergunta, identifica o assunto e seleciona as fichas documentais relacionadas.
 
 ### Agente de orientação
 
-Responsável por elaborar a resposta utilizando as informações disponíveis na base de conhecimento.
+Consulta as fichas autorizadas por meio da ferramenta `consultar_ficha` e elabora uma resposta baseada nas informações disponíveis.
 
 ### Agente de revisão
 
-Responsável por verificar a qualidade da resposta, sua coerência e sua adequação às informações documentadas.
+Analisa a resposta produzida, verificando sua exatidão, completude, segurança, clareza e adequação às fichas.
 
 ### Agente principal
 
-Responsável pela coordenação do atendimento e pela integração dos componentes do sistema.
+O projeto também declara um agente principal com instruções e guardrails próprios. No fluxo implementado em `executar_agentes`, a coordenação das etapas ocorre diretamente pela função Python.
 
-### Fluxo de funcionamento
+### Fluxo de atendimento
 
 ```text
-              USUÁRIO
-                 |
-                 v
-          INTERFACE GRADIO
-                 |
-                 v
-        VALIDAÇÃO DE ENTRADA
-                 |
-                 v
-          AGENTE DE TRIAGEM
-                 |
-                 v
-       IDENTIFICAÇÃO DAS FICHAS
-                 |
-                 v
+                USUÁRIO
+                   |
+                   v
+            INTERFACE GRADIO
+                   |
+                   v
+          VALIDAÇÃO DE ENTRADA
+                   |
+                   v
+             AGENTE TRIAGEM
+                   |
+                   v
+         IDENTIFICAÇÃO DE FICHAS
+                   |
+                   v
              DATA LOADER
-                 |
-                 v
-        AGENTE DE ORIENTAÇÃO
-                 |
-                 v
-          AGENTE DE REVISÃO
-                 |
-                 v
-         VALIDAÇÃO DE SAÍDA
-                 |
-                 v
+                   |
+                   v
+           AGENTE ORIENTAÇÃO
+                   |
+                   v
+             AGENTE REVISÃO
+                   |
+                   v
+           VALIDAÇÃO DE SAÍDA
+                   |
+                   v
           RESPOSTA AO USUÁRIO
 ```
 
+As etapas de entrada e saída incluem verificações implementadas no código Python.
+
 ---
 
-## 4. Base de conhecimento
+## 5. Base de conhecimento
 
-O sistema utiliza sete fichas documentais, identificadas de FC-01 a FC-07.
+O assistente utiliza exclusivamente sete fichas fictícias disponibilizadas na pasta `Documents/`.
 
-| Ficha | Assunto |
+| Código | Documento |
 |---|---|
-| FC-01 | Documento de identidade (RG) |
+| FC-01 | Carteira de Identidade (RG) |
 | FC-02 | Cadastro de Pessoa Física (CPF) |
 | FC-03 | Título de eleitor |
-| FC-04 | Serviços documentais |
-| FC-05 | Serviços documentais |
-| FC-06 | Serviços documentais |
+| FC-04 | Carteira de Trabalho |
+| FC-05 | Certidões |
+| FC-06 | Renovação da CNH |
 | FC-07 | Regras gerais de atendimento |
 
-As fichas estão armazenadas na pasta `Documents/` e são consultadas conforme o assunto identificado.
+As fichas constituem a fonte autorizada para a geração das orientações.
 
-**Importante:** as informações utilizadas no projeto são fictícias e destinadas exclusivamente à demonstração acadêmica. O assistente não substitui canais oficiais de atendimento.
+**As informações são fictícias e utilizadas exclusivamente para fins acadêmicos.**
 
----
-
-## 5. Guardrails e segurança
-
-O projeto implementa mecanismos de proteção para aumentar a confiabilidade das interações.
-
-Entre as verificações realizadas estão:
-
-- Identificação de dados sensíveis.
-- Proteção contra tentativas de prompt injection.
-- Validação das entradas do usuário.
-- Verificação das respostas geradas.
-- Controle de solicitações fora do escopo.
-- Redução de respostas sem fundamentação documental.
-
-Esses mecanismos fazem parte do processamento do sistema e complementam a revisão realizada pelos agentes.
+O projeto não deve substituir os canais oficiais dos órgãos competentes.
 
 ---
 
-## 6. Interface Gradio
+## 6. Segurança e guardrails
 
-A interface foi desenvolvida para permitir que o usuário envie perguntas em linguagem natural e receba orientações de maneira simples.
+O Citizen Assist AI possui mecanismos para identificar solicitações inadequadas e reduzir respostas não fundamentadas.
 
-### Exemplo de atendimento — Documento de identidade
+Entre os controles implementados estão:
 
-![Interface de atendimento sobre RG](img/interface-rg.png)
+- Identificação de determinados formatos de dados pessoais.
+- Detecção de padrões de prompt injection.
+- Validação de entrada.
+- Validação de saída.
+- Verificação de informações incompatíveis com regras específicas.
+- Tratamento de perguntas fora do escopo.
+- Reconhecimento de limitações documentais.
 
-### Exemplo de atendimento — Título de eleitor e acessibilidade
-
-![Interface de atendimento sobre voto e Libras](img/interface-voto-libras.png)
-
-A interface permite demonstrar a integração entre os agentes, a base documental e os mecanismos de validação.
-
----
-
-## 7. Golden Dataset
-
-Para avaliar o funcionamento do sistema, foi utilizado um **Golden Dataset composto por 26 casos de teste**.
-
-Os casos permitem verificar diferentes aspectos do comportamento do assistente, incluindo:
-
-- Fidelidade às informações documentadas.
-- Completude das orientações.
-- Segurança das respostas.
-- Clareza da comunicação.
-
-O conjunto foi utilizado para executar uma avaliação sistemática do sistema.
+Esses mecanismos não garantem proteção absoluta contra todos os tipos de entrada ou erro.
 
 ---
 
-## 8. Avaliação com LLM-as-a-Judge
+## 7. Interface Gradio
 
-O projeto utiliza uma abordagem de avaliação automatizada denominada **LLM-as-a-Judge**.
+A interface gráfica foi desenvolvida utilizando Gradio.
 
-Nesse processo, um modelo de linguagem atua como avaliador das respostas produzidas pelo sistema, atribuindo notas segundo critérios previamente definidos.
+O usuário pode:
+
+- Enviar perguntas em linguagem natural.
+- Consultar orientações documentais.
+- Utilizar perguntas sugeridas.
+- Visualizar o histórico da conversa.
+- Limpar a conversa.
+
+### Atendimento sobre RG
+
+![Interface RG](img/interface-rg.png)
+
+### Atendimento sobre voto e acessibilidade
+
+![Interface voto e Libras](img/interface-voto-libras.png)
+
+---
+
+## 8. Golden Dataset
+
+O projeto utiliza um Golden Dataset com **26 casos de teste**.
+
+O conjunto contempla diferentes categorias de interação:
+
+- Perguntas dentro do escopo.
+- Perguntas fora do escopo.
+- Entradas inválidas.
+- Solicitações contendo dados pessoais.
+- Tentativas de prompt injection.
+- Perguntas sobre as limitações do sistema.
+
+O arquivo está localizado em:
+
+`Golden-Dataset/golden_dataset.json`
+
+---
+
+## 9. Avaliação com LLM-as-a-Judge
+
+O LLM-as-a-Judge avalia as respostas do assistente de acordo com quatro critérios:
+
+1. Fidelidade às fichas documentais.
+2. Completude da resposta.
+3. Segurança.
+4. Clareza.
+
+Cada critério recebe uma nota de 0 a 5.
+
+Uma resposta é considerada aprovada quando todos os critérios recebem nota igual ou superior a 4 e as fontes são consideradas corretas pelo avaliador.
 
 ### Resultados finais
-
-Após os ajustes e a nova execução do avaliador, foram obtidos os seguintes resultados:
 
 | Indicador | Resultado |
 |---|---:|
 | Total de casos | 26 |
 | Casos avaliados | 26 |
-| Casos aprovados | 26 |
-| Casos reprovados | 0 |
+| Aprovados | 26 |
+| Reprovados | 0 |
 | Erros de execução | 0 |
-| **Taxa de aprovação** | **100,00%** |
-| Média de fidelidade | 5,00/5 |
-| Média de completude | 4,88/5 |
-| Média de segurança | 5,00/5 |
-| Média de clareza | 5,00/5 |
-| **Média geral** | **4,97/5** |
+| Taxa de aprovação | 100,00% |
+| Fidelidade média | 5,00/5 |
+| Completude média | 4,88/5 |
+| Segurança média | 5,00/5 |
+| Clareza média | 5,00/5 |
+| Média geral | 4,97/5 |
 
-### Comparação entre as avaliações
+### Comparação entre avaliações
 
-| Indicador | Avaliação anterior | Avaliação final |
+| Indicador | Anterior | Final |
 |---|---:|---:|
 | Casos avaliados | 26 | 26 |
 | Aprovados | 23 | 26 |
@@ -214,133 +255,255 @@ Após os ajustes e a nova execução do avaliador, foram obtidos os seguintes re
 | Taxa de aprovação | 88,46% | 100,00% |
 | Média geral | 4,71/5 | 4,97/5 |
 
-### Análise dos resultados
+A taxa de aprovação aumentou 11,54 pontos percentuais.
 
-A avaliação final apresentou aprovação de todos os 26 casos, representando um aumento de **11,54 pontos percentuais** em relação à avaliação anterior.
+Os resultados representam o desempenho no conjunto avaliado, não uma garantia de respostas corretas em todas as situações.
 
-Os critérios de fidelidade, segurança e clareza alcançaram nota máxima.
+O registro da avaliação final está disponível em:
 
-A completude apresentou média de 4,88/5, indicando que ainda existe uma pequena margem para aperfeiçoar o nível de detalhamento de determinadas respostas.
-
-A média geral de 4,97/5 demonstra desempenho elevado no conjunto de testes utilizado.
-
-É importante destacar que os resultados correspondem ao Golden Dataset avaliado e não representam garantia de desempenho perfeito em todas as situações possíveis.
+`Tests/results/run.json`
 
 ---
 
-## 9. Como executar o projeto
+## 10. Avaliação com usuários
+
+Foi realizada uma avaliação de usabilidade com cinco participantes externos.
+
+Cada participante realizou três tarefas, totalizando **15 tarefas**.
+
+Foram coletados tempos de utilização e avaliações em escala de 1 a 5.
+
+### Resultados por participante
+
+| Participante | Tempo registrado | Média da avaliação |
+|---|---:|---:|
+| P01 | 40 s | 4,60/5 |
+| P02 | 30 s | 5,00/5 |
+| P03 | 40 s | 4,40/5 |
+| P04 | 20 s | 4,80/5 |
+| P05 | 28 s | 4,80/5 |
+
+### Indicadores gerais
+
+| Indicador | Resultado |
+|---|---:|
+| Participantes | 5 |
+| Tarefas realizadas | 15 |
+| Tempo médio registrado | 31,6 segundos |
+| Média de usabilidade | 4,72/5 |
+| Percentual da escala máxima | 94,4% |
+
+Os tempos foram registrados por participante, e não individualmente para cada tarefa.
+
+Os resultados indicam uma avaliação positiva da experiência de utilização, considerando a amostra analisada.
+
+---
+
+## 11. Como executar o projeto
 
 ### Pré-requisitos
 
 - Python instalado.
-- Dependências do projeto instaladas.
-- Chave de API da OpenAI configurada.
-- Ambiente virtual Python recomendado.
+- Git instalado.
+- Chave de API da OpenAI.
+- Conexão com a internet para utilização da API.
 
-### Clonar o repositório
+### 11.1. Clonar o repositório
 
 ```bash
 git clone https://github.com/natan-costa01/GS-IA_sem2.git
 cd GS-IA_sem2
 ```
 
-### Criar o ambiente virtual
+### 11.2. Criar ambiente virtual
 
 ```powershell
 python -m venv .venv
 ```
 
-### Ativar o ambiente virtual no PowerShell
+### 11.3. Ativar o ambiente virtual
+
+No PowerShell:
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 ```
 
-### Instalar as dependências
-
-Caso o projeto possua um arquivo `requirements.txt`:
+### 11.4. Instalar dependências
 
 ```powershell
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
-### Configurar a chave da OpenAI
+### 11.5. Configurar a chave da OpenAI
 
-No PowerShell:
+Crie um arquivo `.env` na raiz do projeto.
+
+Adicione:
+
+```env
+OPENAI_API_KEY=SUA_CHAVE_AQUI
+```
+
+Nunca publique a chave de API no GitHub.
+
+### 11.6. Executar o chatbot
 
 ```powershell
-$env:OPENAI_API_KEY="SUA_CHAVE_AQUI"
+python Live/app.py
 ```
 
-Não publique sua chave de API no GitHub.
+Acesse:
 
-### Executar a interface
-
-Execute o arquivo Python responsável pela inicialização da interface Gradio, conforme a estrutura do repositório.
+http://127.0.0.1:7860
 
 ---
 
-## 10. Executando a avaliação
+## 12. Executar a avaliação automatizada
 
-Para executar novamente o LLM-as-a-Judge, localize o arquivo `evaluate.py` no projeto.
-
-No PowerShell, a partir da raiz do repositório:
+Para executar todos os casos do Golden Dataset:
 
 ```powershell
-$arquivo = Get-ChildItem -Path . -Filter "evaluate.py" -Recurse -File |
-Where-Object { $_.FullName -notmatch '\\.venv\\' } |
-Select-Object -First 1
-
-if ($arquivo) {
-    & ".\.venv\Scripts\python.exe" $arquivo.FullName
-} else {
-    Write-Host "evaluate.py não encontrado."
-}
+python Tests/evaluate.py
 ```
 
-O script executa a avaliação conforme as configurações implementadas no arquivo.
+Para executar apenas cinco casos:
 
-**Resultado registrado na última execução: 26 casos aprovados, 0 reprovados e média geral de 4,97/5.**
+```powershell
+python Tests/evaluate.py --limit 5
+```
 
-A execução utiliza a API e pode gerar custos de processamento.
+Para executar sem o LLM-as-a-Judge:
 
----
+```powershell
+python Tests/evaluate.py --sem-juiz
+```
 
-## 11. Organização do projeto
+Os resultados são salvos em:
 
-Os principais componentes estão organizados por responsabilidade:
+`Tests/results/run.json`
 
-| Componente | Responsabilidade |
-|---|---|
-| `LLM/agents.py` | Implementação e coordenação dos agentes |
-| `LLM/prompt.py` | Instruções e prompts dos agentes |
-| `LLM/guardrails.py` | Validações e mecanismos de segurança |
-| `Data/data_loader.py` | Carregamento das fichas documentais |
-| `Documents/` | Base de conhecimento |
-| `img/` | Imagens da interface |
-| `evaluate.py` | Script de avaliação, localizado em uma subpasta do projeto |
+**Atenção:** a execução pode consumir créditos da API da OpenAI. Uma nova avaliação também pode sobrescrever o arquivo de resultados existente.
 
 ---
 
+## 13. Estrutura do projeto
 
-## 13. Considerações finais
+```text
+GS-IA_sem2/
+|
+|-- Data/
+|   |-- __init__.py
+|   |-- data_loader.py
+|
+|-- Documents/
+|   |-- FC-01_rg_segunda_via.md
+|   |-- FC-02_cpf.md
+|   |-- FC-03_titulo_de_eleitor.md
+|   |-- FC-04_carteira_de_trabalho.md
+|   |-- FC-05_certidoes.md
+|   |-- FC-06_cnh_renovacao.md
+|   |-- FC-07_regras_gerais.md
+|
+|-- Golden-Dataset/
+|   |-- golden_dataset.json
+|
+|-- LLM/
+|   |-- __init__.py
+|   |-- agents.py
+|   |-- guardrails.py
+|   |-- judge.py
+|   |-- prompt.py
+|
+|-- Live/
+|   |-- app.py
+|   |-- style.css
+|
+|-- Tests/
+|   |-- evaluate.py
+|   |-- test_triagem.py
+|   |-- results/
+|       |-- run.json
+|
+|-- img/
+|   |-- interface-rg.png
+|   |-- interface-voto-libras.png
+|
+|-- README.md
+|-- requirements.txt
+|-- relatorio_global_solution_citizen_assist_ai.pdf
+```
 
-O desenvolvimento do Citizen Assist AI permitiu aplicar conceitos de Inteligência Artificial Generativa, arquiteturas multiagentes, validação de entradas e saídas, utilização de bases documentais e avaliação sistemática de modelos de linguagem.
-
-A utilização do Golden Dataset e do LLM-as-a-Judge permitiu mensurar o comportamento do sistema e comparar os resultados antes e depois dos ajustes realizados.
-
-Na avaliação final, o projeto obteve **100% de aprovação nos 26 casos testados**, com média geral de **4,97/5**.
-
-O projeto demonstra uma aplicação acadêmica de agentes de IA para orientação documental, mantendo a preocupação com segurança, clareza e fidelidade às fontes.
+O arquivo `requirements.txt` deve ser adicionado à raiz do projeto conforme apresentado neste README.
 
 ---
 
-## 14. Repositório
+## 14. Relação com os Objetivos de Desenvolvimento Sustentável
 
-**GitHub:** https://github.com/natan-costa01/GS-IA_sem2
+O projeto apresenta relação temática com os seguintes Objetivos de Desenvolvimento Sustentável (ODS):
 
-**Projeto:** Citizen Assist AI
+### ODS 10 — Redução das Desigualdades
 
-**Instituição:** FIAP
+A proposta busca facilitar a compreensão de informações documentais e reduzir barreiras de acesso à orientação sobre serviços.
 
-**Área:** Inteligência Artificial Generativa e Sistemas Multiagentes
+### ODS 11 — Cidades e Comunidades Sustentáveis
+
+O assistente explora uma solução digital voltada à melhoria da experiência de acesso a informações sobre serviços ao cidadão.
+
+Essas relações representam a contribuição pretendida pelo protótipo acadêmico, não uma medição de impacto social efetivo.
+
+---
+
+## 15. Limitações do projeto
+
+O Citizen Assist AI é uma demonstração acadêmica.
+
+Suas principais limitações são:
+
+- Utilização de informações fictícias.
+- Base de conhecimento restrita às sete fichas.
+- Ausência de integração com cadastros públicos reais.
+- Impossibilidade de emitir documentos.
+- Impossibilidade de realizar agendamentos.
+- Dependência da API de modelos de linguagem.
+- Possibilidade de respostas incompletas ou inadequadas.
+
+Os resultados da avaliação automatizada são restritos ao Golden Dataset utilizado.
+
+---
+
+## 17. Relatório técnico
+
+O relatório final da Global Solution está disponível no repositório:
+
+[Relatório Final — Citizen Assist AI](relatorio_global_solution_citizen_assist_ai.pdf)
+
+O documento apresenta a arquitetura do sistema, a metodologia de avaliação, os resultados do Judge, os testes com usuários, os gráficos e as considerações finais.
+
+---
+
+## 18. Considerações finais
+
+O Citizen Assist AI demonstra a aplicação de Inteligência Artificial Generativa em um cenário fictício de orientação ao cidadão.
+
+A arquitetura multiagentes permite organizar o atendimento em etapas de triagem, consulta documental, orientação e revisão.
+
+A avaliação automatizada registrou aprovação de 26 dos 26 casos do Golden Dataset, com média geral de 4,97/5.
+
+A avaliação com cinco participantes e 15 tarefas registrou média de usabilidade de 4,72/5 e tempo médio de 31,6 segundos por participante.
+
+Os resultados demonstram o potencial da solução no contexto acadêmico, respeitando as limitações do protótipo e a necessidade de confirmação de informações nos canais oficiais.
+
+---
+
+<div align="center">
+
+**CITIZEN ASSIST AI**
+
+Global Solution — Citizen Tech
+
+FIAP
+
+https://github.com/natan-costa01/GS-IA_sem2
+
+</div>
