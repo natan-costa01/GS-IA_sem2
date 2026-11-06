@@ -91,15 +91,15 @@ async def processar_resposta(historico, pergunta):
             )
 
     except Exception as erro:
-        print(
-            "[Citizen Assist AI] Erro: "
-            f"{type(erro).__name__}: {erro}"
-        )
+        import traceback
+
+        print("\n========== ERRO CITIZEN ASSIST AI ==========")
+        traceback.print_exc()
+        print("============================================\n")
 
         resposta = (
-            "Ocorreu um problema ao processar sua "
-            "pergunta. Tente novamente.\n\n"
-            + AVISO
+            "Ocorreu um problema ao processar sua pergunta. "
+            "Tente novamente.\n\n" + AVISO
         )
 
     historico.append({
